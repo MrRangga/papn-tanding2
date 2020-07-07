@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>detail</title>
+    <link rel="manifest" href="./manifest.json">
+    <script src="https://use.fontawesome.com/64c9157724.js"></script>
+
+</head>
+<body>
+    <nav class="nav-extended">
+        <div class="nav-wrapper white z-index-up">
+            <a href="index.html" class="brand-logo black-text center "><img src="./img/pngegg.png" width="50" height="auto" class="pt-10"></a>
+            <a href="/#klassmen" class="sidenav-trigger black-text" class="sidenav-trigger"><i class="fa fa-arrow-circle-left">back</i></a>
+            <ul class="topnav left hide-on-med-and-down"></ul>
+            <!-- sidenav -->
+            <ul class="sidenav" id="nav-mobile">
+            </ul>
+        </div>
+      </nav>
+  </ul>
+        <div class="carousel carousel-slider mt-10">
+            <a class="carousel-item" href="#two!"><img src="img/uefa_champions_league_00.jpg"></a>
+          </div>
+		
+        <main id="main" class="container center-custom" style="margin-top: 10px">
+            
+        </main>
+        
+        <footer class="footer">&copy copyleft</footer>
+        <script type="module" src="team.js"></script> 
+        <script>
+
+             if("serviceWorker" in navigator) {
+                window.addEventListener('load',function(){
+                    navigator.serviceWorker.register('./serviceWorker.js').then(function(){
+                        console.log('service worker terdaftar')  
+                    })
+                    .catch(function(){
+                        console.log('service worker gagal terdaftar');
+                        
+                    })
+                })
+            } else{
+                console.log('browser not supported');
+                
+            }
+                 
+            // Periksa fitur Notification API
+            if ("Notification" in window) {
+              requestPermission();
+            } else {
+              console.error("browser not supported");
+            }
+            
+            // Meminta ijin menggunakan Notification API
+            function requestPermission() {
+              Notification.requestPermission().then(function (result) {
+                if (result === "denied") {
+                  console.log("access denied");
+                  return;
+                } else if (result === "default") {
+                  console.error("access denied");
+                  return;
+                }
+                
+                console.log("Fitur notifikasi diijinkan.");
+              });
+            }
+
+            var teamUrl = "http://api.football-data.org/v2/teams/"
+            
+
+                function getStandingById() {
+    return new Promise(function(resolve, reject) {
+      // Ambil nilai query parameter (?id=)
+      var urlParams = new URLSearchParams(window.location.search);
+      var idParam = urlParams.get("id");
+
+        fetch(teamUrl + idParam,{
+            headers: {
+                'X-Auth-Token': '5a17945d57c04a18a04f10585331a0f7'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            let teamInfo = `
+            <div class="fixed-action-btn">
+                <a class="btn-floating btn-large red" id="save" onclick="saveData()">
+                <i class="fa fa-floppy-o" aria-hidden="true"></i>
+                </a>
+            </div>
+            <h4>Detail Team</h4> 
+                 <table>
+            <tbody>
+              <tr>
+                <td>Name</td>
+                <td>${data.name} , ${(data.shortName === null) ? '' : data.shortName} , ${(data.tla === null) ? '' : data.tla}</td>
+              </tr>
+              <tr>  
+                <td>Logo</td>
+                <td><img src="${data.crestUrl}" onerror="this.src='img/logo-default.png'" alt="logo" width="50" height="50"/></td>
+              </tr>
+              <tr>
+                <td>Contact</td>
+                <td>${(data.phone === null) ? '' : data.phone} , ${(data.email === null) ? '' : data.email} , ${(data.website === null) ? '' : data.website} </td>
+              </tr>
+              <tr>
+                <td>Address</td>
+                <td>${(data.address === null) ? '' : data.address}</td>
+              </tr>
+              <tr>
+                <td>Founded</td>
+                <td>${(data.founded === null) ? '' : data.founded}</td>
+              </tr>
+              <tr>
+                <td>Venue </td>
+                <td>${(data.venue === null) ? '' : data.venue}</td>
+              </tr>
+            </tbody>
+          </table>
+            <br />
+          <h5>Squad</h5>
+            ` 
+            let squad =""
+            data.squad.forEach(data => {
+            let color;
+            if(data.position === 'Goalkeeper') {
+                color = "yellow darken-3"
+            }
+
+            else if(data.position === 'Defender') {
+                 color = "blue"
+            }
+
+            else if(data.position === 'Midfielder') {
+                 color = "lime darken-1"
+            }
+
+            else if(data.position === 'Attacker') {
+                 color = "red darken-1"
+            }
+
+            else{ 
+                 color = "grey lighten-1"
+            }
+
+                squad += ` 
+
+                <div class="card ${color}">
+                    <div class="card-content white-text">
+                    <span class="card-title">${data.name}</span>
+                    <p>
+                        ${(data.position === null) ? data.role : data.position}
+                    </p>
+                    </div>
+                </div>`
+            })
+
+            teamInfo += squad
+            document.querySelector("main").innerHTML = teamInfo
+            resolve(data)
+        })   
+        .catch(error => {
+            console.log(error)
+        })
+    })
+    }
+
+        var item = getStandingById()
+
+                function saveData() {
+                    item.then(data => {
+                        saveForLater(data);
+                    })
+                }
+
+
+        </script>
+
+</body>
+</html>
+
